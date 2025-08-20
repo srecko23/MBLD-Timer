@@ -1042,9 +1042,13 @@ function saveToFile() {
         save: localStorage.getItem("save"),
     };
 
-    const blob = new Blob([JSON.stringify(masterSave)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    document.getElementById("save-link").href = url;
+    if (masterSave.save.length === 0) {
+        alert("No review systems to save.")
+    } else {
+        const blob = new Blob([JSON.stringify(masterSave)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        document.getElementById("save-link").href = url;
+    }
 }
 
 function loadFromFile() {
@@ -1063,7 +1067,7 @@ function loadFromFile() {
 
             loadTable(true);
             document.getElementById("edit-button").style.display = "block";
-            displayAttempts();
+            toggleReviewSystemAlert(false);
         });
 }
 
@@ -1089,4 +1093,5 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
 
