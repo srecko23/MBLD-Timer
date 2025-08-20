@@ -511,7 +511,7 @@ function addSplit(name, cubes, type) {
                     elements[i].append(input2);
                     input2.setAttribute("id", "cube-input");
                     input2.setAttribute("value", cubes);
-                    input2.setAttribute("type", "number");
+                    input2.type = "number";
                     input2.setAttribute("min", 1);
                     input2.setAttribute("tabindex", -1);
                     input2.setAttribute("onfocusout", "validateCubeNumberInput(this)");
@@ -1093,5 +1093,6 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
 
 
