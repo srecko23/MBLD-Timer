@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MBLD Timer</title>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="icon" type="image/x-icon" href="assets/333mbf.svg">
+        <script src="index.js" async></script>
+    </head>
+    <body>
+        <div id="timer-area">
+            <div id="timer-div">
+                <div id="timer-proper">
+                    <h1 class="timer" id="timer">0.00</h1>
+                    <h1 class="timer" id="timer-secondary">0.00</h1>
+                </div>
+                <h3 id="no-review-system-alert" style="display:none;">No review system! Create one to get started</h3>
+                <div id="reset-area">
+                    <div id="accuracy-input-div">
+                        <input type="number" id="accuracy-input" min ="0" class="accuracy-input">
+                        <p id="out-of-n" class="out-of-n"> </p>
+                    </div>
+                    <h2 class="reset-text">Enter - save attempt</h2>
+                    <h2 class="reset-text">Esc - discard attempt</h2>
+                    <h2 class="reset-text">Ctrl+2/Alt+2 - add/remove +2s</h2>
+                    <h2 class="reset-text suphour">Alt+H - use 1 hour as time instead</h2>
+                    <textarea id="notes-input" placeholder="Enter notes... (optional)" onfocus="toggleNotesInput()" onblur="toggleNotesInput()"></textarea>
+                </div>
+                <div id="past-attempts"></div>
+            </div>
+            <div id="button-area">
+                <div id="settings" class="panel grey">
+                    <h2>Settings</h2>
+                    <div>
+                        <input type="number" name="default-cubes-input" value = 8>
+                        <label for="default-cubes-input">Default cubes / Split</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="hour-sound-option">
+                        <label for="hour-sound-option">Play bell sound on 1 hour</label>
+                    </div>
+                    <div class="timer-options">
+                        <h3>Timer Displays:</h3>
+                        <div>
+                            <input type="radio" name="timer-option" id="global" value="global" checked>
+                            <label for="global">Global Time</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="timer-option" id="split" value="split">
+                            <label for="split">Split Time</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="timer-option" id="both" value="both">
+                            <label for="both">Both</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="timer-option" id="nothing" value="nothing">
+                            <label for="nothing">Nothing</label>
+                        </div>
+                    </div>
+                    <div class="timer-precision">
+                        <h3>Timer Precision:</h3>
+                        <div>
+                            <input type="radio" name="timer-precision" id="hundredth" value="hundredth" checked>
+                            <label for="global">0.01s</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="timer-precision" id="tenth" value="tenth">
+                            <label for="split">0.1s</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="timer-precision" id="second" value="second">
+                            <label for="both">1s</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="save-div" class="panel grey">
+                    <input id="review-system-name" type="text" placeholder="Name this review system..." value="" onchange="updateHeaderText(this.value)">
+                    <button id="save-button" class = "button grey black-border" onclick = "saveReviewSystem()">Save</button>
+                    <button id="exit-button" class = "button grey black-border" onclick = "exit()">Exit</button>
+                </div>
+                <div id="load-div" class="panel grey">
+                    <button id="create-button" class="button grey black-border" onclick = "createReviewSystem()">Create review system</button>
+                    <button id="edit-button" class="button grey black-border" onclick = "editReviewSystem()">Edit this review system</button>
+                    <button id="load-button" class="button grey black-border" onclick = "showSaved()">Load review system ▼</button>
+                    <table id="saved-review-systems">
+                    </table>
+                </div>
+                <button class="button green" id="add-split">Add Split</button>
+                <button class ="button red" id="delete-split">Delete Split</button>
+                <div id="links-div">
+                    <a download="mbld_timer_save" id="save-link" onclick="saveToFile()">Save to file</a>
+                    <label>
+                        <input id="file-input" type="file" style="display: none;" oninput = "loadFromFile()">
+                        <a id="load-link">Load from file</a>
+                    </label>
+                </div>
+            </div>
+            <div class="spreadsheet-div">
+                <h1 id="review-system-name-header"></h1>
+                <table class="spreadsheet" id = "normal-rows">
+                    <tr class = "first-row">
+                        <th>Split Name</th>
+                        <th>Split Time</th>
+                        <th>Global Time</th>
+                        <th># of Cubes</th>
+                        <th>Time/cube</th>
+                        <th>Type</th>
+                    </tr>
+                    <tr class = "row">
+                        <td class="split-name"><input type="text" class="name-input"></td>
+                        <td class="split-time"></td>
+                        <td class="global-time"></td>
+                        <td class="cube-number"><input type="number" class="cube-input" value = 8 tabindex = -1 min = 1 onfocusout = "validateCubeNumberInput(this)"></td>
+                        <td class="per-cube"></td>
+                        <td class="type" data-type="memo">Memo</td>
+                    </tr>
+                </table>
+                <table class="spreadsheet" id = "special-rows">
+                    <tr id="exec-row">
+                        <td>Exec</td>
+                        <td class="split-time"></td>
+                        <td class="global-time"></td>
+                        <td class="cube-number"></td>
+                        <td class="per-cube"></td>
+                        <td class="type" data-type="exec">Exec</td>
+                    </tr>
+                    <tr class = "special-row" id="total-memo-row">
+                        <td>Total Memo</td>
+                        <td class="split-time special"></td>
+                        <td class="global-time special"></td>
+                        <td class="cube-number"></td>
+                        <td class="per-cube special"></td>
+                        <td class="type" data-type="total">Total</td>
+                    </tr>
+                    <tr class = "special-row" id="total-row">
+                        <td>Total</td>
+                        <td class="split-time special"></td>
+                        <td class="global-time special"></td>
+                        <td class="cube-number"></td>
+                        <td class="per-cube special"></td>
+                        <td class="type" data-type="total">Total</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <audio>
+            <source src="assets/mixkit-alert-bells-echo-765.wav" type="audio/wav">
+        </audio>
+        <dialog id="summary-dialog">
+            <h2 id="dialog-header"></h2>
+            <pre id="dialog-text"></pre>
+            <div class="dialog-button-div">
+                <button class="dialog-button" onclick= "copyDialogText()">Copy</button>
+                <button class="dialog-button" onclick= "exitDialog(this.parentElement.parentElement)">Exit</button>
+            </div>
+        </dialog>
+        <dialog id="edit-dialog" closedby="none">
+            <h2 id="edit-dialog-header">Edit this attempt</h2>
+            <textarea id="edit-notes-input" placeholder="Edit notes..."></textarea>
+            <div id="accuracy-edit-div">
+                <input type="number" id="accuracy-edit" min = "0" class="accuracy-input" onfocusout="validateAccuracyInput(this)">
+                <p id="out-of-n-edit" class="out-of-n"> </p>
+            </div>
+            <div class="dialog-button-div">
+                <button class="dialog-button" onclick= "editAttempt()">Save</button>
+                <button class="dialog-button" onclick= "exitDialog(this.parentElement.parentElement)">Exit</button>
+            </div>
+        </dialog>
+    </body>
+</html>
