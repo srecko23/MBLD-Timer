@@ -1043,7 +1043,7 @@ function saveToFile() {
     };
 
     if (masterSave.save.length === 0) {
-        alert("No review systems to save.")
+        alert("No review systems to save.");
     } else {
         const blob = new Blob([JSON.stringify(masterSave)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
@@ -1093,6 +1093,7 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
 
 
 
