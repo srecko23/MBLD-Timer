@@ -1063,6 +1063,7 @@ function loadFromFile() {
 
             loadTable(true);
             document.getElementById("edit-button").style.display = "block";
+            displayAttempts();
         });
 }
 
@@ -1088,3 +1089,4 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
