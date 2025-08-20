@@ -41,15 +41,6 @@ let attemptIndex;
 
 let masterSave;
 
-let rows = [document.querySelector(".row")];
-document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
-document.addEventListener("keyup", (event) => {inputUp(event)} );
-document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
-document.querySelector("input[type=checkbox]").addEventListener("input", (_event) => {
-    preferences.bell = !preferences.bell;
-    localStorage.setItem("preferences", JSON.stringify(preferences));
-});
-
 function loadAttempts() {
     attempts = JSON.parse(localStorage.getItem("attempts"));
     if (attempts === null) {
@@ -59,6 +50,17 @@ function loadAttempts() {
 
 loadAttempts()
 attempts = [];
+
+let rows = [document.querySelector(".row")];
+document.querySelector("input[type=checkbox]").addEventListener("input", (_event) => {
+    preferences.bell = !preferences.bell;
+    localStorage.setItem("preferences", JSON.stringify(preferences));
+});
+if(attempts.length > 0) {
+    document.addEventListener("keyup", (event) => {inputUp(event)} );
+    document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
+    document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
+}
 
 class Attempt {
     constructor(solved, attempted, time, summary, notes, date, reviewSystem, plusTwos) {
