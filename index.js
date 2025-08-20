@@ -1042,7 +1042,7 @@ function saveToFile() {
         save: localStorage.getItem("save"),
     };
 
-    if (masterSave.save.length === 0) {
+    if (Object.keys(masterSave.save).length === 0) {
         alert("No review systems to save.");
     } else {
         const blob = new Blob([JSON.stringify(masterSave)], {type: 'application/json'});
@@ -1093,6 +1093,7 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
 
 
 
