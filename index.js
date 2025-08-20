@@ -200,7 +200,12 @@ function loadTable(initial) {
     reviewSystemStorage = JSON.parse(localStorage.getItem("save"));
     setPlaceholdersTo("");
 
-    if (lastLoaded === "null" || !(localStorage.getItem("lastLoadedName") in reviewSystemStorage)) {
+    if (lastLoaded === "null") {
+        document.querySelector(".spreadsheet-div").style.visibility = "hidden";
+        document.getElementById("review-system-name-header").textContent = "";
+        document.getElementById("edit-button").style.display = "none";
+        toggleReviewSystemAlert(true);
+    } else if (!localStorage.getItem("lastLoadedName") in reviewSystemStorage) {
         document.querySelector(".spreadsheet-div").style.visibility = "hidden";
         document.getElementById("review-system-name-header").textContent = "";
         document.getElementById("edit-button").style.display = "none";
@@ -1042,7 +1047,7 @@ function saveToFile() {
         save: localStorage.getItem("save"),
     };
 
-    if (Object.keys(masterSave.save).length === 0) {
+    if (Object.keys(JSON.parse(masterSave.save)).length === 0) {
         alert("No review systems to save.");
     } else {
         const blob = new Blob([JSON.stringify(masterSave)], {type: 'application/json'});
@@ -1066,6 +1071,7 @@ function loadFromFile() {
             localStorage.setItem("save", data.save);
 
             loadTable(true);
+            displayAttempts();
             document.getElementById("edit-button").style.display = "block";
             toggleReviewSystemAlert(false);
         });
