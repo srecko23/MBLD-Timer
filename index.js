@@ -52,7 +52,7 @@ loadAttempts()
 attempts = [];
 
 let rows = [document.querySelector(".row")];
-document.querySelector("input[type=checkbox]").addEventListener("input", (_event) => {
+document.querySelector("#hour-sound-option").addEventListener("input", (_event) => {
     preferences.bell = !preferences.bell;
     localStorage.setItem("preferences", JSON.stringify(preferences));
 });
