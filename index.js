@@ -1020,7 +1020,7 @@ function validateCubeNumberInput(inputField) {
 }
 
 function validateAccuracyInput(inputField) {
-    if (inputField.value === "" || inputField.value < 1 || inputField.value == null || inputField.value > attempts[attemptIndex].attempted) {
+    if (inputField.value === "" || inputField.value < 1 || inputField.value == null || inputField.value > totalCubes) {
         inputField.value = 0;
     }
 }
@@ -1088,4 +1088,3 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
-
