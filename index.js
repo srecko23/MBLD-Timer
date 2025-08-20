@@ -41,6 +41,15 @@ let attemptIndex;
 
 let masterSave;
 
+let rows = [document.querySelector(".row")];
+document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
+document.addEventListener("keyup", (event) => {inputUp(event)} );
+document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
+document.querySelector("input[type=checkbox]").addEventListener("input", (_event) => {
+    preferences.bell = !preferences.bell;
+    localStorage.setItem("preferences", JSON.stringify(preferences));
+});
+
 function loadAttempts() {
     attempts = JSON.parse(localStorage.getItem("attempts"));
     if (attempts === null) {
@@ -156,15 +165,6 @@ loadPreferences();
 
 document.querySelector(".cube-input").value = preferences.defaultCubes;
 document.querySelector(".cube-input").addEventListener("input", (event) => {updateCubeNumber()});
-
-let rows = [document.querySelector(".row")];
-document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
-document.addEventListener("keyup", (event) => {inputUp(event)} );
-document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
-document.querySelector("input[type=checkbox]").addEventListener("input", (_event) => {
-    preferences.bell = !preferences.bell;
-    localStorage.setItem("preferences", JSON.stringify(preferences));
-});
 
 function loadPreferences() {
     preferences = JSON.parse(localStorage.getItem("preferences"));
@@ -1088,3 +1088,4 @@ function toggleReviewSystemAlert(bool) {
             break;
     }
 }
+
