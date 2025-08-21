@@ -576,7 +576,7 @@ function addSplit(name, cubes, type) {
                     elements[i].append(input2);
                     input2.setAttribute("id", "cube-input");
                     input2.setAttribute("value", cubes);
-                    input2.type = "number";
+                    input2.setAttribute("type", "number");
                     input2.setAttribute("min", 1);
                     input2.setAttribute("tabindex", -1);
                     input2.setAttribute("onfocusout", "validateCubeNumberInput(this)");
@@ -922,6 +922,7 @@ function loadReviewSystem(event, fromButton) {
         reviewSystem = load[event.target.innerHTML].split("#");
     } else {
         reviewSystem = localStorage.getItem("lastLoaded").split("#");
+        console.log(reviewSystem);
     }
 
     splitsTotal = 1;
@@ -970,7 +971,7 @@ function deleteReviewSystem(event) {
         localStorage.setItem("attempts", JSON.stringify(attempts));
 
         if (Object.keys(reviewSystemStorage).length !== 0) {
-             localStorage.setItem("lastLoaded", reviewSystemStorage[0]);
+             localStorage.setItem("lastLoaded", reviewSystemStorage[Object.keys(reviewSystemStorage)[0]]);
              localStorage.setItem("lastLoadedName", document.getElementById("saved-review-systems").querySelector("tr .load-button").textContent);
 
              loadReviewSystem(null, false);

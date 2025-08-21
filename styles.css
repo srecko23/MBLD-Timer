@@ -47,9 +47,9 @@ a {
     text-decoration: underline;
 }
 
-#links-div {
+.links-div {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 #timer-area {
