@@ -543,7 +543,7 @@ function incrementTimer() {
             break;
     }
 
-    if (time === hour && preferences.bell) {
+    if (time === timeLimit(totalCubes) && preferences.bell && timeLimit(totalCubes) !== 0) {
         bell.play();
     }
 }
@@ -884,8 +884,7 @@ function exit() {
     document.querySelector("#load-div").style.display = "flex";
 
     toggleInputTo(false);
-
-    loadReviewSystem(null, false);
+    loadTable(true);
 }
 
 function showSaved() {
@@ -1168,7 +1167,15 @@ function toggleReviewSystemAlert(bool) {
     }
 }
 
-
+function timeLimit(n) {
+    if (n === 1) {
+        return 0;
+    } else if (n > 1 && n < 6) {
+        return n*60_000;
+    } else {
+        return 360_000
+    }
+}
 
 
 
