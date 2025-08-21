@@ -59,15 +59,15 @@
                     <div class="timer-precision">
                         <h3>Timer Precision:</h3>
                         <div>
-                            <input type="radio" name="timer-precision" id="hundredth" value="hundredth" checked>
+                            <input type="radio" name="timer-precision" id="hundredth" value="hundredth" checked onchange="displayAttempts()">
                             <label for="global">0.01s</label>
                         </div>
                         <div>
-                            <input type="radio" name="timer-precision" id="tenth" value="tenth">
+                            <input type="radio" name="timer-precision" id="tenth" value="tenth" onchange="displayAttempts()">
                             <label for="split">0.1s</label>
                         </div>
                         <div>
-                            <input type="radio" name="timer-precision" id="second" value="second">
+                            <input type="radio" name="timer-precision" id="second" value="second" onchange="displayAttempts()">
                             <label for="both">1s</label>
                         </div>
                     </div>
