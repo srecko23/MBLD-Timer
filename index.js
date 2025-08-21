@@ -340,11 +340,11 @@ function inputUp(event) {
         resetTimer();
         displayAttempts();
         notesInput.value = "";
-    } else if (event.key === "2" && !event.altKey && plusTwos < 10 && timerState === "done") {
+    } else if (event.key === "2" && event.altKey && plusTwos < 10 && timerState === "done") {
         plusTwos++
         time += 200;
         timer.textContent = formatTime(time) + "+".repeat(plusTwos);
-    } else if (event.key === "2" && event.altKey && plusTwos != 0 && timerState === "done") {
+    } else if (event.key === "1" && event.altKey && plusTwos != 0 && timerState === "done") {
         plusTwos--
         time -= 200;
         timer.textContent = formatTime(time) + "+".repeat(plusTwos);
