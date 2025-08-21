@@ -35,7 +35,7 @@ let totalCubes = 0;
 let attemptEndTime = 0;
 let plusTwos = 0;
 
-let reviewSystemStorage = JSON.parse(localStorage.getItem("save"));
+let reviewSystemStorage 
 
 let attempts;
 let attemptIndex;
@@ -49,20 +49,27 @@ function loadAttempts() {
     if (attempts === null) {
         attempts = [];
     }
+
+    reviewSystemStorage = JSON.parse(localStorage.getItem("save"));
+    if (reviewSystemStorage === null) {
+        reviewSystemStorage = new Object();
+    }
 }
 
 loadAttempts()
 attempts = [];
 
+document.addEventListener("keyup", (event) => {inputUp(event)} );
 let rows = [document.querySelector(".row")];
 document.querySelector("#hour-sound-option").addEventListener("input", (_event) => {
     preferences.bell = !preferences.bell;
     localStorage.setItem("preferences", JSON.stringify(preferences));
 });
-if(Object.keys(reviewSystemStorage) !== 0) {
-    document.addEventListener("keyup", (event) => {inputUp(event)} );
-    document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
-    document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
+if (reviewSystemStorage !== null) {
+    if(Object.keys(reviewSystemStorage) !== 0) {
+        document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
+        document.querySelector("[name=default-cubes-input]").addEventListener("input", (_event) => {updateDefaultCubes()});
+    }
 }
 
 class Split {
@@ -260,12 +267,12 @@ function loadTable(initial) {
     reviewSystemStorage = JSON.parse(localStorage.getItem("save"));
     setPlaceholdersTo("");
 
-    if (lastLoaded === "null") {
+    if (lastLoaded === null || reviewSystemStorage === null) {
         document.querySelector(".spreadsheet-div").style.visibility = "hidden";
         document.getElementById("review-system-name-header").textContent = "";
         document.getElementById("edit-button").style.display = "none";
         toggleReviewSystemAlert(true);
-    } else if (!localStorage.getItem("lastLoadedName") in reviewSystemStorage) {
+    } else if (!(localStorage.getItem("lastLoadedName") in reviewSystemStorage)) {
         document.querySelector(".spreadsheet-div").style.visibility = "hidden";
         document.getElementById("review-system-name-header").textContent = "";
         document.getElementById("edit-button").style.display = "none";
