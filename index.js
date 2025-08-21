@@ -52,7 +52,7 @@ function loadAttempts() {
 
     reviewSystemStorage = JSON.parse(localStorage.getItem("save"));
     if (reviewSystemStorage === null) {
-        reviewSystemStorage = new Object();
+        reviewSystemStorage = new Object(); 
     }
 }
 
