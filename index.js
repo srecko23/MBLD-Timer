@@ -922,7 +922,6 @@ function loadReviewSystem(event, fromButton) {
         reviewSystem = load[event.target.innerHTML].split("#");
     } else {
         reviewSystem = localStorage.getItem("lastLoaded").split("#");
-        console.log(reviewSystem);
     }
 
     splitsTotal = 1;
