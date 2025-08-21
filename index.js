@@ -371,7 +371,6 @@ function inputUp(event) {
                 plusTwos = 0;
                 splitStorage = splitStorage.slice(0, -3);
                 saveSplit(true);
-                console.log(splitStorage);
                 break;
             default:
                 time = hour;
@@ -385,7 +384,6 @@ function inputUp(event) {
                 plusTwos = 0;
                 splitStorage = splitStorage.slice(0, -3);
                 saveSplit(true);
-                console.log(splitStorage);
                 break;
         }
     }
@@ -824,6 +822,7 @@ function saveReviewSystem() {
                     }
                 }
                 if (!conflictFound) {
+                    loadAttempts();
                     Object.defineProperty(reviewSystemStorage, [name], {value:stringifyReviewSystem(), enumerable: true, configurable: true});
                     localStorage.setItem("save", JSON.stringify(reviewSystemStorage));
             
@@ -845,6 +844,7 @@ function saveReviewSystem() {
                 break;
             
             case "edit":
+                loadAttempts();
                 let oldName = localStorage.getItem("lastLoadedName");
                 delete reviewSystemStorage[oldName];
                 Object.defineProperty(reviewSystemStorage, [name], {value:stringifyReviewSystem(), enumerable: true, configurable: true});
