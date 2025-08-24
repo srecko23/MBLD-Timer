@@ -47,6 +47,10 @@ a {
     text-decoration: underline;
 }
 
+a:hover {
+    color: aqua;
+}
+
 .links-div {
     display: flex;
     justify-content: space-evenly;
@@ -270,6 +274,10 @@ td input {
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size: 15px;
     border-radius: 20px;
+}
+
+button:hover {
+    filter: brightness(85%);
 }
 
 .load-button {
