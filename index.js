@@ -676,6 +676,7 @@ function addGoalColumn() {
             goalCell.textContent = formatTime(goals[localStorage.getItem("lastLoadedName")][i-1]);  
         }
 
+        goalCell.style.backgroundColor = (tableRows[i].children)[0].style.backgroundColor;
         tableRows[i].insertBefore(goalCell, tableRows[i].children[2]);
     }
 }
