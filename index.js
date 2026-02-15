@@ -7,6 +7,7 @@ const buttonArea = document.getElementById("button-area");
 const pastAttempts = document.getElementById("past-attempts");
 const dialog = document.getElementById("summary-dialog");
 const editDialog = document.getElementById("edit-dialog");
+const goalDialog = document.getElementById("goal-dialog");
 
 const hour = 360_000;
 
@@ -44,6 +45,8 @@ let masterSave;
 
 let splitStorage = [];
 
+let goals; 
+
 function loadAttempts() {
     attempts = JSON.parse(localStorage.getItem("attempts"));
     if (attempts === null) {
@@ -54,6 +57,12 @@ function loadAttempts() {
     if (reviewSystemStorage === null) {
         reviewSystemStorage = new Object(); 
     }
+
+    goals = JSON.parse(localStorage.getItem("goals"));
+    if (goals === null) {
+        goals = new Object();
+        localStorage.setItem("goals", JSON.stringify(goals));
+    }
 }
 
 loadAttempts()
@@ -61,10 +70,17 @@ attempts = [];
 
 document.addEventListener("keyup", (event) => {inputUp(event)} );
 let rows = [document.querySelector(".row")];
+
 document.querySelector("#hour-sound-option").addEventListener("input", (_event) => {
     preferences.bell = !preferences.bell;
     localStorage.setItem("preferences", JSON.stringify(preferences));
 });
+
+document.querySelector("#goal-option").addEventListener("input", (_event) => {
+    preferences.goalTimes = !preferences.goalTimes;
+    localStorage.setItem("preferences", JSON.stringify(preferences));
+});
+
 if (reviewSystemStorage !== null) {
     if(Object.keys(reviewSystemStorage) !== 0) {
         document.querySelector(".type").addEventListener("click", (event) => {changeType(event)});
@@ -219,9 +235,10 @@ for (let i=0; i < radioButtons.length; i++) {
 }
 
 class Preferences {
-    constructor(defaultCubes, bell, timerDisplay, timerPrecision) {
+    constructor(defaultCubes, bell, goalTimes, timerDisplay, timerPrecision) {
         this.defaultCubes = defaultCubes;
         this.bell = bell;
+        this.goalTimes = goalTimes;
         this.timerDisplay = timerDisplay;
         this.timerPrecision = timerPrecision;
     }
@@ -237,11 +254,12 @@ function loadPreferences() {
     preferences = JSON.parse(localStorage.getItem("preferences"));
 
     if (preferences === null) {
-        preferences = new Preferences(8, false, "global", "hundredth");
+        preferences = new Preferences(8, false, false, "global", "hundredth");
     }
 
     document.querySelector("[name=default-cubes-input]").value = preferences.defaultCubes;
-    document.querySelector("input[type=checkbox]").checked = preferences.bell;
+    document.querySelector("#hour-sound-option").checked = preferences.bell;
+    document.querySelector("#goal-option").checked = preferences.goalTimes;
 
     for (let i=0; i<radioButtons.length; i++) {
         if (radioButtons[i].value === preferences.timerDisplay || radioButtons[i].value === preferences.timerPrecision) {
@@ -271,11 +289,13 @@ function loadTable(initial) {
         document.querySelector(".spreadsheet-div").style.visibility = "hidden";
         document.getElementById("review-system-name-header").textContent = "";
         document.getElementById("edit-button").style.display = "none";
+        document.getElementById("goal-button").style.display = "none";
         toggleReviewSystemAlert(true);
     } else if (!(localStorage.getItem("lastLoadedName") in reviewSystemStorage)) {
         document.querySelector(".spreadsheet-div").style.visibility = "hidden";
         document.getElementById("review-system-name-header").textContent = "";
         document.getElementById("edit-button").style.display = "none";
+        document.getElementById("goal-button").style.display = "none";
         toggleReviewSystemAlert(true);
     } else {
         document.querySelector(".spreadsheet-div").style.visibility = "visible";
@@ -289,8 +309,17 @@ function loadTable(initial) {
 function clearRows(rows) {
     for (let i = 0; i < rows.length; i++) {
         rows[i].querySelector(".split-time").textContent = "";
+
+        if (rows[i].querySelector(".goal-time") !== null) {
+            rows[i].querySelector(".goal-time").remove();
+        }
+
         rows[i].querySelector(".global-time").textContent = "";
         rows[i].querySelector(".per-cube").textContent = "";
+    }
+
+    if (document.querySelector(".goal-header") !== null) {
+        document.querySelector(".goal-header").remove();
     }
 }
 
@@ -398,6 +427,16 @@ function displayTime(final) {
             break;
         } 
     }
+
+    columns = document.querySelectorAll(".goal-time");
+    for (i = 0; i < columns.length; i++) {
+        if (!columns[i].textContent.includes("(") && !columns[i].classList.contains("special")) {
+            columns[i].textContent = getGoalDifference();
+            columns[i].style.backgroundColor = goalDifferenceColor(getGoalDifference());
+            break;
+        } 
+    }
+
     columns = document.querySelectorAll(".global-time");
     for (i = 0; i < columns.length; i++) {
         if (columns[i].textContent === "" && !columns[i].classList.contains("special")) {
@@ -442,12 +481,24 @@ function displayTime(final) {
 }
 
 function startTimer() {
+    let goalTime;
+
+    if (localStorage.getItem("goals") !== null) {
+        goalTime = JSON.parse(localStorage.getItem("goals"))[localStorage.getItem("lastLoadedName")];
+    } else {
+        goalTime = undefined;
+    }
+
     if (document.activeElement.nodeName !== "INPUT") {
         currentSplit++;
         interval = setInterval(incrementTimer, 10);
         timerState = "running";
         buttonArea.style.display = "none";
         pastAttempts.style.display = "none";
+
+        if (!(goalTime === undefined || !(preferences.goalTimes) || Object.keys(goals[localStorage.getItem("lastLoadedName")]).length < localStorage.getItem("lastLoaded").split("#").length + 1)) {
+            addGoalColumn();
+        }
     }
 }
 
@@ -605,6 +656,30 @@ function addSplit(name, cubes, type) {
     }
 }
 
+function addGoalColumn() {
+    let tableRows = Array.from(document.querySelectorAll(".first-row, .row, #exec-row, .special-row"));
+    let goalCell;
+
+    for (let i=0; i < tableRows.length; i++) {
+        if (tableRows[i].classList.contains("first-row")) {
+            goalCell = document.createElement("th");
+            goalCell.textContent = "Goal/Pace";
+            goalCell.classList.add("goal-header");
+        } else if (tableRows[i].classList.contains("special-row")){
+            goalCell = document.createElement("td");
+            goalCell.classList.add("goal-time");
+            goalCell.classList.add("special");
+            goalCell.textContent = "N/A";
+        } else {
+            goalCell = document.createElement("td");
+            goalCell.classList.add("goal-time");
+            goalCell.textContent = formatTime(goals[localStorage.getItem("lastLoadedName")][i-1]);  
+        }
+
+        tableRows[i].insertBefore(goalCell, tableRows[i].children[2]);
+    }
+}
+
 document.getElementById("add-split").onclick = () => {
     addSplit("", preferences.defaultCubes, "memo");
 }
@@ -651,17 +726,23 @@ function updateDefaultCubes() {
 }
 
 function formatTime(number) {
+    let sign = "";
+    if (number < 0) {
+        sign = "-";
+        number *= -1;
+    }
+
     let centiseconds = addLeadingZero((number % 100).toString());
     let seconds = (Math.floor((number / 100)%60)).toString();
     let minutes = (Math.floor((number / 6000))%60).toString();
     let hours = (Math.floor(number / hour)).toString();
 
     if (Number(minutes) === 0 && Number(hours) === 0) {
-        return cutOffDigits(seconds + "." + centiseconds);
+        return sign + cutOffDigits(seconds + "." + centiseconds);
     } else if (Number(hours) === 0) {
-        return cutOffDigits(`${minutes}:${addLeadingZero(seconds)}.${centiseconds}`);
+        return sign + cutOffDigits(`${minutes}:${addLeadingZero(seconds)}.${centiseconds}`);
     } else {
-        return cutOffDigits(`${hours}:${addLeadingZero(minutes)}:${addLeadingZero(seconds)}.${centiseconds}`);
+        return sign + cutOffDigits(`${hours}:${addLeadingZero(minutes)}:${addLeadingZero(seconds)}.${centiseconds}`);
     }
 }
 
@@ -700,6 +781,16 @@ function cutOffDigits(time) {
             return time.slice(0, -1);
         case "second":
             return time.slice(0, -3);
+    }
+}
+
+function cutOffDigitsPostFormat(time) {
+    if (time.includes(".00")) {
+        return time.slice(0, -3);
+    } else if (time.includes(".0")) {
+        return time.slice(0, -2);
+    } else {
+        return time;
     }
 }
 
@@ -824,7 +915,9 @@ function saveReviewSystem() {
                 if (!conflictFound) {
                     loadAttempts();
                     Object.defineProperty(reviewSystemStorage, [name], {value:stringifyReviewSystem(), enumerable: true, configurable: true});
+                    Object.defineProperty(goals, [name], {value:new Object(), enumerable: true, configurable: true});
                     localStorage.setItem("save", JSON.stringify(reviewSystemStorage));
+                    localStorage.setItem("goals", JSON.stringify(goals));
             
                     document.querySelector("#save-div").style.display = "none";
                     document.querySelector("#add-split").style.display = "none";
@@ -839,6 +932,7 @@ function saveReviewSystem() {
             
                     loadReviewSystem(null, false);
                     document.getElementById("edit-button").style.display = "block";
+                    document.getElementById("goal-button").style.display = "block";
                     setPlaceholdersTo("");
                 }
                 break;
@@ -846,9 +940,20 @@ function saveReviewSystem() {
             case "edit":
                 loadAttempts();
                 let oldName = localStorage.getItem("lastLoadedName");
+                let oldNameGoals = goals[oldName];
+
+                if (Object.keys(goals[oldName]).length !== 0 && stringifyReviewSystem().split("#").length !== localStorage.getItem("lastLoaded").split("#").length) {
+                    alert("You've changed the number of splits in this review system. Please update the goals for it.");
+                }
+
                 delete reviewSystemStorage[oldName];
+                delete goals[oldName];
+
                 Object.defineProperty(reviewSystemStorage, [name], {value:stringifyReviewSystem(), enumerable: true, configurable: true});
+                Object.defineProperty(goals, [name], {value:oldNameGoals, enumerable: true, configurable: true});
+
                 localStorage.setItem("save", JSON.stringify(reviewSystemStorage));
+                localStorage.setItem("goals", JSON.stringify(goals));
         
                 document.querySelector("#save-div").style.display = "none";
                 document.querySelector("#add-split").style.display = "none";
@@ -870,6 +975,7 @@ function saveReviewSystem() {
         
                 loadReviewSystem(localStorage.getItem("lastLoaded"));
                 document.getElementById("edit-button").style.display = "block";
+                document.getElementById("goal-button").style.display = "block";
                 setPlaceholdersTo("");
         }
     }
@@ -969,6 +1075,10 @@ function deleteReviewSystem(event) {
         delete reviewSystemStorage[toDelete];
         localStorage.setItem("save", JSON.stringify(reviewSystemStorage));
 
+        goals = JSON.parse(localStorage.getItem("goals"));
+        delete goals[toDelete];
+        localStorage.setItem("goals", JSON.stringify(goals));
+
         attempts = attempts.filter(function(attempt) {
             return belongsTo(attempt, toDelete);
         });
@@ -984,6 +1094,7 @@ function deleteReviewSystem(event) {
             localStorage.setItem("lastLoaded", null);
             localStorage.setItem("lastLoadedName", null);
             document.getElementById("edit-button").style.display = "none";
+            document.getElementById("goal-button").style.display = "none";
 
             loadTable(false);
          }
@@ -1020,13 +1131,115 @@ function displayDialog(header, text) {
 }
 
 function displayEditDialog(notes, accuracy, cubeNumber) {
-
     document.getElementById("edit-notes-input").value = notes;
     document.getElementById("accuracy-edit").value = accuracy;
     document.getElementById("out-of-n-edit").textContent = "/" + cubeNumber;
 
     editDialog.showModal();
     editDialog.style.display = "flex";
+}
+
+function displayGoalDialog() {
+    displayAttempts();
+    goalDialog.showModal();
+    goalDialog.style.display = "block";
+
+    const splits = localStorage.getItem("lastLoaded").split("#");
+    const saveButton = document.createElement("input");
+    const cancelButton = document.createElement("input");
+
+    saveButton.setAttribute("type", "submit");
+    saveButton.setAttribute("value", "Save");
+    saveButton.setAttribute("class", "dialog-button");
+    cancelButton.setAttribute("type", "button");
+    cancelButton.setAttribute("value", "Cancel");
+    cancelButton.setAttribute("class", "dialog-button");
+    cancelButton.setAttribute("onclick", "exitDialog(goalDialog);clearGoalDialog()");
+
+    const buttonDiv = document.createElement("div");
+    buttonDiv.appendChild(saveButton);
+    buttonDiv.appendChild(cancelButton);
+    buttonDiv.setAttribute("id", "goalButtonDiv");
+    buttonDiv.style.order = "99";
+
+    const form = document.createElement("form");
+    goalDialog.appendChild(form);
+    form.setAttribute("id", "goalInputForm");
+    form.setAttribute("onsubmit", "saveGoal(event)");
+    form.appendChild(buttonDiv);
+
+    goals = JSON.parse(localStorage.getItem("goals"));
+
+    for (let i = 0; i < splits.length+1; i++) {
+        const div = document.createElement("div");
+        const name = document.createElement("h3");
+        const input = document.createElement("input");
+
+        div.setAttribute("class", "goalInputRow");
+        name.setAttribute("class", "goalInputName");
+        input.setAttribute("class", "goalInput");
+        input.setAttribute("pattern", "[0-5]{0,1}[0-9]{1}:[0-5]{1}[0-9]{1}|[0-5]{0,1}[0-9]{1}");
+        input.setAttribute("required", "true");
+
+        if (goals[localStorage.getItem("lastLoadedName")] !== undefined) {
+            if (i < Object.keys(goals[localStorage.getItem("lastLoadedName")]).length) {
+                input.setAttribute("value", cutOffDigitsPostFormat(formatTime(goals[localStorage.getItem("lastLoadedName")][i])));
+            }
+        }
+
+        div.appendChild(name);
+        div.appendChild(input);
+        form.appendChild(div);
+
+        if (!(i === splits.length)) {
+            name.textContent = splits[i].split(",")[0];
+        } else {
+            name.textContent = "Exec";
+        }
+
+        input.placeholder = "0:00";
+    }
+}
+
+function clearGoalDialog() {
+    document.getElementById("goalInputForm").remove();
+}
+
+function saveGoal(event) {
+    event.preventDefault();
+    let goalArray = new Array;
+
+    for (el of document.querySelectorAll(".goalInput")) {
+        goalArray.push(unformatTime(el.value));
+    }
+
+    Object.defineProperty(goals, [localStorage.getItem("lastLoadedName")], {value:goalArray, configurable:true, enumerable:true});
+    localStorage.setItem("goals", JSON.stringify(goals));
+    exitDialog(goalDialog);
+    clearGoalDialog();
+}
+
+function getGoalDifference() {
+    let goalTime = JSON.parse(localStorage.getItem("goals"))[localStorage.getItem("lastLoadedName")];
+    let sign = "";
+    
+    if (goalTime === undefined || !(preferences.goalTimes) || Object.keys(goals[localStorage.getItem("lastLoadedName")]).length < localStorage.getItem("lastLoaded").split("#").length + 1) {
+        return "N/A";
+    }
+
+    if (splitTime - goalTime[currentSplit-2] > 0) {
+        sign = "+";
+    }
+
+    return ` (${sign}${formatTime(splitTime - goalTime[currentSplit - 2])})`;
+}
+
+function goalDifferenceColor(goalDifference) {
+    if (goalDifference.includes("-")) {
+        return "#07a607"; //green
+    }
+
+    return "#a60707"; //red
 }
 
 function editAttempt() {
@@ -1084,7 +1297,8 @@ function deletePastAttempt(event) {
 }
 
 function validateCubeNumberInput(inputField) {
-    if (inputField.value === "" || inputField.value < 1 || inputField.value == null) {
+    const str = inputField.value;
+    if (str === "" || str < 1 || str == null) {
         inputField.value = preferences.defaultCubes;
     }
 
@@ -1092,7 +1306,8 @@ function validateCubeNumberInput(inputField) {
 }
 
 function validateAccuracyInput(inputField) {
-    if (inputField.value === "" || inputField.value < 1 || inputField.value == null || inputField.value > totalCubes) {
+    const str = inputField.value;
+    if (str === "" || str < 1 || str == null || str > totalCubes) {
         inputField.value = 0;
     }
 }
@@ -1112,6 +1327,7 @@ function saveToFile() {
         lastLoadedName: localStorage.getItem("lastLoadedName"),
         preferences: localStorage.getItem("preferences"),
         save: localStorage.getItem("save"),
+        goals: localStorage.getItem("goals")
     };
 
     if (Object.keys(JSON.parse(masterSave.save)).length === 0) {
@@ -1136,6 +1352,7 @@ function loadFromFile() {
             localStorage.setItem("lastLoadedName", data.lastLoadedName);
             localStorage.setItem("preferences", data.preferences);
             localStorage.setItem("save", data.save);
+            localStorage.setItem("goals", data.goals);
 
             loadTable(true);
             displayAttempts();
@@ -1176,6 +1393,3 @@ function timeLimit(n) {
         return 360_000
     }
 }
-
-
-

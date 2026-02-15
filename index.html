@@ -37,6 +37,10 @@
                         <input type="checkbox" name="hour-sound-option" id="hour-sound-option">
                         <label for="hour-sound-option">Play bell sound on WCA time limit</label>
                     </div>
+                    <div>
+                        <input type="checkbox" name="goal-option" id="goal-option">
+                        <label for="goal-option">Show goal times for splits if set</label>
+                    </div>
                     <div class="timer-options">
                         <h3>Timer Displays:</h3>
                         <div>
@@ -80,6 +84,7 @@
                 <div id="load-div" class="panel grey">
                     <button id="create-button" class="button grey black-border" onclick = "createReviewSystem()">Create review system</button>
                     <button id="edit-button" class="button grey black-border" onclick = "editReviewSystem()">Edit this review system</button>
+                    <button id="goal-button" class="button grey black-border" onclick = "displayGoalDialog()">Set goals for this review system</button>
                     <button id="load-button" class="button grey black-border" onclick = "showSaved()">Load review system ▼</button>
                     <table id="saved-review-systems">
                     </table>
@@ -168,6 +173,9 @@
                 <button class="dialog-button" onclick= "editAttempt()">Save</button>
                 <button class="dialog-button" onclick= "exitDialog(this.parentElement.parentElement)">Exit</button>
             </div>
+        </dialog>
+        <dialog id="goal-dialog">
+            <h2 id="edit-dialog-header">Set goal times:</h2>
         </dialog>
     </body>
     <script src="index.js" async></script>
