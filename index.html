@@ -179,4 +179,19 @@
         </dialog>
     </body>
     <script src="index.js" async></script>
+
+    <script type="module">
+        import { randomScrambleForEvent } from "https://cdn.cubing.net/v0/js/cubing/scramble";
+        for (let i=0; i<51; i++) {
+            const scramble = await randomScrambleForEvent("333bf");
+            scramble.log();
+        }
+
+        import { setSearchDebug } from "https://cdn.cubing.net/v0/js/cubing/search";
+
+        setSearchDebug({
+        logPerf: false,
+        scramblePrefetchLevel: "none"
+        });
+    </script>
 </html>

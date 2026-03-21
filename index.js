@@ -540,9 +540,13 @@ function performUnsplit() {
             rowsReverse[i].querySelector(".split-time").textContent = "";
             rowsReverse[i].querySelector(".global-time").textContent = "";
             rowsReverse[i].querySelector(".per-cube").textContent = "";
+            rowsReverse[i].querySelector(".goal-time").textContent = "";
+            rowsReverse[i].querySelector(".goal-time").style.backgroundColor = rowsReverse[i].querySelector(".split-time").style.backgroundColor;
             break;
         }
     }
+
+    splitStorage.pop();
 }
 
 function stopTimer() {
