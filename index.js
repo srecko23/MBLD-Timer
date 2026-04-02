@@ -13,12 +13,14 @@ const hour = 360_000;
 
 let timerState = "ready";
 let time = 0;
+let timerStartDate;
 let realTimeStorage = 0;
 let realExecTimeStorage = 0;
 let realMemoTimeStorage = 0;
 let bell = document.querySelector("audio");
 let endedAtHour = false;
 let editorMode;
+
 
 let editing = false;
 function toggleInputTo(boolean) {
@@ -495,6 +497,7 @@ function startTimer() {
         timerState = "running";
         buttonArea.style.display = "none";
         pastAttempts.style.display = "none";
+        timerStartDate = new Date();
 
         if (!(goalTime === undefined || !(preferences.goalTimes) || Object.keys(goals[localStorage.getItem("lastLoadedName")]).length < localStorage.getItem("lastLoaded").split("#").length + 1)) {
             addGoalColumn();
@@ -540,7 +543,7 @@ function performUnsplit() {
             rowsReverse[i].querySelector(".split-time").textContent = "";
             rowsReverse[i].querySelector(".global-time").textContent = "";
             rowsReverse[i].querySelector(".per-cube").textContent = "";
-            rowsReverse[i].querySelector(".goal-time").textContent = "";
+            rowsReverse[i].querySelector(".goal-time").textContent = formatTime(goals[localStorage.getItem("lastLoadedName")][rowsReverse.length - i - 1]);
             rowsReverse[i].querySelector(".goal-time").style.backgroundColor = rowsReverse[i].querySelector(".split-time").style.backgroundColor;
             break;
         }
@@ -573,8 +576,9 @@ function stopTimer() {
 }
 
 function incrementTimer() {
-    time++;
-    splitTime++;
+    let currentTime = new Date();
+    time = Math.floor((currentTime - timerStartDate)/10);
+    splitTime = Math.floor((currentTime - timerStartDate)/10);
 
     switch(preferences.timerDisplay) {
         case "global":
