@@ -14,6 +14,7 @@ const hour = 360_000;
 let timerState = "ready";
 let time = 0;
 let timerStartDate;
+let splitStartDate;
 let realTimeStorage = 0;
 let realExecTimeStorage = 0;
 let realMemoTimeStorage = 0;
@@ -498,6 +499,7 @@ function startTimer() {
         buttonArea.style.display = "none";
         pastAttempts.style.display = "none";
         timerStartDate = new Date();
+        splitStartDate = new Date();
 
         if (!(goalTime === undefined || !(preferences.goalTimes) || Object.keys(goals[localStorage.getItem("lastLoadedName")]).length < localStorage.getItem("lastLoaded").split("#").length + 1)) {
             addGoalColumn();
@@ -508,10 +510,10 @@ function startTimer() {
 function performSplit(finalSplit) {
     currentSplit++;
     displayTime(finalSplit);
-
     saveSplit(finalSplit);
 
     splitTime = 0;
+    splitStartDate = new Date();
 }
 
 
@@ -537,8 +539,12 @@ function performUnsplit() {
     for (let i=0; i < rowsReverse.length; i++) {
         if (rowsReverse[i].querySelector(".split-time").textContent !== "") {          
             currentSplit--;
-            let pastSplitTime = unformatTime(rowsReverse[i].querySelector(".split-time").textContent);
-            splitTime += pastSplitTime;
+
+            if (i+1 < rowsReverse.length) {
+                splitStartDate = new Date(unformatTime(rowsReverse[i+1].querySelector(".global-time").textContent) * 10 + timerStartDate.getTime());
+            } else {
+                splitStartDate = timerStartDate;
+            }
 
             rowsReverse[i].querySelector(".split-time").textContent = "";
             rowsReverse[i].querySelector(".global-time").textContent = "";
@@ -578,7 +584,7 @@ function stopTimer() {
 function incrementTimer() {
     let currentTime = new Date();
     time = Math.floor((currentTime - timerStartDate)/10);
-    splitTime = Math.floor((currentTime - timerStartDate)/10);
+    splitTime = Math.floor((currentTime - splitStartDate)/10);
 
     switch(preferences.timerDisplay) {
         case "global":
