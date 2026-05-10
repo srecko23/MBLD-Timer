@@ -218,7 +218,7 @@ class PastAttemptRow extends HTMLDivElement {
             scrButton.src = "assets/scramble_icon.svg";
             iconsDiv.appendChild(scrButton);
             scrButton.onclick = function() {
-                displayPastScrambleDialog(attempt.scrs);
+                displayPastScrambleDialog(attempt.scrs.slice(0, attempt.attempted));
             }
         }
 
