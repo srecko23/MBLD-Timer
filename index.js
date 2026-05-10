@@ -8,6 +8,9 @@ const pastAttempts = document.getElementById("past-attempts");
 const dialog = document.getElementById("summary-dialog");
 const editDialog = document.getElementById("edit-dialog");
 const goalDialog = document.getElementById("goal-dialog");
+const scrambleDialog = document.getElementById("scramble-dialog");
+const pastScrambleDialog = document.getElementById("past-scramble-dialog");
+const scrambleButton = document.getElementById("view-scrambles");
 
 const hour = 360_000;
 
@@ -39,7 +42,7 @@ let totalCubes = 0;
 let attemptEndTime = 0;
 let plusTwos = 0;
 
-let reviewSystemStorage 
+let reviewSystemStorage;
 
 let attempts;
 let attemptIndex;
@@ -50,7 +53,9 @@ let splitStorage = [];
 
 let goals; 
 
-function loadAttempts() {
+const mod = (a,b) => ((a%b) + b) % b;
+
+async function loadAttempts() {
     attempts = JSON.parse(localStorage.getItem("attempts"));
     if (attempts === null) {
         attempts = [];
@@ -65,6 +70,12 @@ function loadAttempts() {
     if (goals === null) {
         goals = new Object();
         localStorage.setItem("goals", JSON.stringify(goals));
+    }
+
+    let scrs = JSON.parse(localStorage.getItem("scrambles"));
+    if (scrs === null) {
+        scrs = await generateScrambles();
+        localStorage.setItem("scrambles", JSON.stringify(scrs));
     }
 }
 
@@ -103,7 +114,7 @@ class Split {
 }
 
 class Attempt {
-    constructor(solved, attempted, time, notes, date, reviewSystem, plusTwos, splits, endedAtHour) {
+    constructor(solved, attempted, time, notes, date, reviewSystem, plusTwos, splits, endedAtHour, scrs) {
         attempted = parseInt(attempted);
         solved = parseInt(solved);
         plusTwos = parseInt(plusTwos);
@@ -124,6 +135,7 @@ class Attempt {
         this.plusTwos = plusTwos;
         this.splits = splits;
         this.endedAtHour = endedAtHour;
+        this.scrs = scrs;
     }
 
     points() {
@@ -141,7 +153,7 @@ class Attempt {
     
         if (this.endedAtHour) {
             asterisk = " *";
-            asteriskExplanation = "\n\n* - attempted stopped at the hour, not all cubes executed";
+            asteriskExplanation = "\n\n* - attempt stopped at the hour, not all cubes executed";
         } else {
             asterisk = "";
             asteriskExplanation = "";
@@ -201,6 +213,15 @@ class PastAttemptRow extends HTMLDivElement {
         this.appendChild(iconsDiv);
         iconsDiv.classList.add("icons-div");
 
+        if (attempt.scrs != null) {
+            let scrButton = document.createElement("img");
+            scrButton.src = "assets/scramble_icon.svg";
+            iconsDiv.appendChild(scrButton);
+            scrButton.onclick = function() {
+                displayPastScrambleDialog(attempt.scrs);
+            }
+        }
+
         let summaryIcon = document.createElement("img");
         summaryIcon.src = "assets/summary_icon.svg";
         summaryIcon.onclick = function() {
@@ -221,7 +242,7 @@ class PastAttemptRow extends HTMLDivElement {
         xButton.src = "assets/exit_icon.svg";
         iconsDiv.appendChild(xButton);
         xButton.addEventListener("click", (event) => {deletePastAttempt(event)});
-
+        
         pastAttempts.appendChild(this);
     }
 }
@@ -349,7 +370,7 @@ function resetTimer() {
     }
 }
 
-function inputUp(event) {
+async function inputUp(event) {
     if (event.key === " " && !editing && Object.keys(reviewSystemStorage).length !== 0) {
         switch (timerState) {
             case "ready":
@@ -373,12 +394,14 @@ function inputUp(event) {
         let notesInput = document.getElementById("notes-input");
         validateAccuracyInput(document.getElementById("accuracy-input"));
 
-        let attempt = new Attempt(document.getElementById("accuracy-input").value, totalCubes.toString(), (time), notesInput.value, Date.parse(attemptEndTime), localStorage.getItem("lastLoadedName"), plusTwos, splitStorage, endedAtHour);
+        let attempt = new Attempt(document.getElementById("accuracy-input").value, totalCubes.toString(), (time), notesInput.value, Date.parse(attemptEndTime), localStorage.getItem("lastLoadedName"), plusTwos, splitStorage, endedAtHour, JSON.parse(localStorage.getItem("scrambles")));
         attempts.unshift(attempt);
         localStorage.setItem("attempts", JSON.stringify(attempts));
         resetTimer();
         displayAttempts();
         notesInput.value = "";
+        scrs = await generateScrambles();
+        localStorage.setItem("scrambles", JSON.stringify(scrs));
     } else if (event.key === "2" && event.altKey && plusTwos < 10 && timerState === "done") {
         plusTwos++
         time += 200;
@@ -908,7 +931,7 @@ function editReviewSystem() {
     setPlaceholdersTo("Type name...");
 }
 
-function saveReviewSystem() {
+async function saveReviewSystem() {
     let name = document.getElementById("review-system-name").value;
 
     if (name === "") {
@@ -929,6 +952,8 @@ function saveReviewSystem() {
                 }
                 if (!conflictFound) {
                     loadAttempts();
+                    let tempSize = highestCubes();
+
                     Object.defineProperty(reviewSystemStorage, [name], {value:stringifyReviewSystem(), enumerable: true, configurable: true});
                     Object.defineProperty(goals, [name], {value:new Object(), enumerable: true, configurable: true});
                     localStorage.setItem("save", JSON.stringify(reviewSystemStorage));
@@ -949,11 +974,18 @@ function saveReviewSystem() {
                     document.getElementById("edit-button").style.display = "block";
                     document.getElementById("goal-button").style.display = "block";
                     setPlaceholdersTo("");
+
+                    if (highestCubes() > tempSize) {
+                        scrs = await generateScrambles();
+                        localStorage.setItem("scrambles", JSON.stringify(scrs));
+                    }
                 }
                 break;
             
             case "edit":
                 loadAttempts();
+                let tempSize = highestCubes();
+
                 let oldName = localStorage.getItem("lastLoadedName");
                 let oldNameGoals = goals[oldName];
 
@@ -992,6 +1024,11 @@ function saveReviewSystem() {
                 document.getElementById("edit-button").style.display = "block";
                 document.getElementById("goal-button").style.display = "block";
                 setPlaceholdersTo("");
+
+                if (highestCubes() > tempSize) {
+                    scrs = await generateScrambles();
+                    localStorage.setItem("scrambles", JSON.stringify(scrs));
+                }
         }
     }
     showSaved();
@@ -1257,6 +1294,34 @@ function goalDifferenceColor(goalDifference) {
     return "#a60707"; //red
 }
 
+function displayScrambleDialog() {
+    scrambleDialog.showModal();
+    scrambleDialog.style.display = "block";
+    scrambleDialog.querySelector("pre").textContent = formatScrambles()[0].join("");
+}
+
+function displayPastScrambleDialog(scrs) {
+    pastScrambleDialog.showModal();
+    pastScrambleDialog.style.display = "block";
+    pastScrambleDialog.querySelector("pre").textContent = listScrambles(scrs)
+}
+
+function incrementScrambles(delta) {
+    let current;
+
+    for (let i = 0; i < formatScrambles().length; i++) {
+        if (formatScrambles()[i].join("") === scrambleDialog.querySelector("pre").textContent) {
+            current = i;
+            break;
+        }
+    }
+
+    let index = mod(current+delta, formatScrambles().length);
+    scrambleDialog.querySelector("pre").textContent = formatScrambles()[index].join("");
+
+    console.log(index)
+}
+
 function editAttempt() {
     let attempt = attempts[attemptIndex];
     attempt.notes = document.getElementById("edit-notes-input").value;
@@ -1277,6 +1342,10 @@ function exitDialog(dialog) {
 
 function copyDialogText() {
     navigator.clipboard.writeText(document.getElementById("dialog-text").textContent);
+}
+
+function copyPastScrambleDialogText() {
+    navigator.clipboard.writeText(document.getElementById("past-scramble-display").textContent);
 }
 
 function displayAttempts() {
@@ -1342,7 +1411,8 @@ function saveToFile() {
         lastLoadedName: localStorage.getItem("lastLoadedName"),
         preferences: localStorage.getItem("preferences"),
         save: localStorage.getItem("save"),
-        goals: localStorage.getItem("goals")
+        goals: localStorage.getItem("goals"),
+        scrambles: localStorage.getItem("scrambles")
     };
 
     if (Object.keys(JSON.parse(masterSave.save)).length === 0) {
@@ -1368,6 +1438,7 @@ function loadFromFile() {
             localStorage.setItem("preferences", data.preferences);
             localStorage.setItem("save", data.save);
             localStorage.setItem("goals", data.goals);
+            localStorage.setItem("scrambles", data.scrambles);
 
             loadTable(true);
             displayAttempts();
@@ -1407,4 +1478,71 @@ function timeLimit(n) {
     } else {
         return 360_000
     }
+}
+
+function formatScrambles() {
+    let x =  Math.ceil(Math.sqrt(totalCubes)); //bigger side
+    let y = Math.ceil(totalCubes/x); //smaller side
+    let scrs = JSON.parse(localStorage.getItem("scrambles")).slice(0, totalCubes);
+    
+    while (scrs.length < x*y) {
+        scrs.push("");
+    }
+
+    for (let i = 0; i < scrs.length; i++) {
+        if (scrs[i]) {
+            scrs[i] = `${(i + 1).toString()}. ${scrs[i]}\n`;
+        }
+    }
+
+    let blocks = new Array;
+
+    for (let i = 0; i < y; i++) {
+        blocks.push(scrs.slice(i*x, (i+1)*x));
+    }
+
+    return blocks;
+}
+
+function listScrambles(scrs) {
+    let outputString = new String;
+
+    for (let i = 0; i < scrs.length; i++) {
+        outputString += `${(i + 1).toString()}. ${scrs[i]}\n`;
+    }
+
+    return outputString;
+}
+
+async function generateScrambles() {
+    let f = await import("./scrambles.js");
+    let output = new Array;
+
+    for (let i = 0; i < highestCubes(); i++) {
+        output.push(await f.getScramble());
+    }
+
+    return output;
+}
+
+function highestCubes() {
+    let array = Object.values(reviewSystemStorage);
+    let max = 0;
+
+    for (let system of array) {
+        let splits = system.split("#");
+        let cubes = 0;
+
+        for (let split of splits) {
+            if (split.split(",")[2] === "memo") {
+                cubes += parseInt(split.split(",")[1]);
+            }
+        }
+
+        if (cubes > max) {
+            max = cubes;
+        }
+    }
+
+    return max;
 }

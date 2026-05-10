@@ -11,6 +11,7 @@
                 <div id="timer-proper">
                     <h1 class="timer" id="timer">0.00</h1>
                     <h1 class="timer" id="timer-secondary">0.00</h1>
+                    <button id="view-scrambles" class="button grey black-border" onclick="displayScrambleDialog(0)">View Scrambles</button>
                 </div>
                 <h3 id="no-review-system-alert" style="display:none;">No review system! Create one to get started</h3>
                 <div id="reset-area">
@@ -177,21 +178,18 @@
         <dialog id="goal-dialog">
             <h2 id="edit-dialog-header">Set goal times:</h2>
         </dialog>
+        <dialog id="scramble-dialog">
+            <pre id="scramble-display"></pre>
+            <button class="dialog-button" onclick= "incrementScrambles(-1)">Previous < </button>
+            <button class="dialog-button" onclick= "incrementScrambles(1)">Next > </button>
+            <button class="dialog-button" onclick= "exitDialog(this.parentElement)">Exit</button>
+        </dialog>
+        <dialog id="past-scramble-dialog">
+            <button class="dialog-button" onclick= "copyPastScrambleDialogText()">Copy</button>
+            <button class="dialog-button" onclick= "exitDialog(this.parentElement)">Exit</button>
+            <pre id="past-scramble-display" class="scramble-pre"></pre>
+
+        </dialog>
     </body>
     <script src="index.js" async></script>
-
-    <script type="module">
-        import { randomScrambleForEvent } from "https://cdn.cubing.net/v0/js/cubing/scramble";
-        for (let i=0; i<51; i++) {
-            const scramble = await randomScrambleForEvent("333bf");
-            scramble.log();
-        }
-
-        import { setSearchDebug } from "https://cdn.cubing.net/v0/js/cubing/search";
-
-        setSearchDebug({
-        logPerf: false,
-        scramblePrefetchLevel: "none"
-        });
-    </script>
 </html>
