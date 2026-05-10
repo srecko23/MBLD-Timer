@@ -365,6 +365,7 @@ function resetTimer() {
 
     buttonArea.style.display = "flex";
     pastAttempts.style.display = "flex";
+    document.getElementById("view-scrambles").style.display = "block";
     if (preferences.timerDisplay === "both") {
         timerSecondary.style.display = "block";
     }
@@ -521,6 +522,7 @@ function startTimer() {
         timerState = "running";
         buttonArea.style.display = "none";
         pastAttempts.style.display = "none";
+        document.getElementById("view-scrambles").style.display = "none";
         timerStartDate = new Date();
         splitStartDate = new Date();
 
